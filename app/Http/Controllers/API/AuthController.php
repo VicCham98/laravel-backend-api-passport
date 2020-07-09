@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\User;
+use App\Admin;
+use App\Customer;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -18,7 +21,7 @@ class AuthController extends Controller
 
         $validatedData['password'] = bcrypt($request->password);
 
-        $user = User::create($validatedData);
+        $user = Customer::create($validatedData);
 
         $accessToken = $user->createToken('authToken')->accessToken;
 
@@ -27,18 +30,36 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $loginData = $request->validate([
-            'email' => 'email|required',
-            'password' => 'required'
-        ]);
 
-        if (!auth()->attempt($loginData)) {
-            return response(['message' => 'Invalid Credentials']);
+        $user = Customer::where("email", request('email'))->first();
+        if(!isset($user)){
+            return "Admin Not found";
         }
 
-        $accessToken = auth()->user()->createToken('authToken')->accessToken;
+        if (!Hash::check(request('password'), $user->password)) {
+            return "Incorrect password";
+        }
 
-        return response(['user' => auth()->user(), 'access_token' => $accessToken]);
+        $tokenResult = $user->createToken('authToken');
+        $user->access_token = $tokenResult->accessToken;
+        $user->token_type = 'Bearer';
+        return $user;
+
+        // $loginData = $request->validate([
+        //     'email' => 'email|required',
+        //     'password' => 'required'
+        // ]);
+
+        // if (!auth('admins')->attempt($loginData)) {
+        //     return response(['message' => 'Invalid Credentials']);
+        // }
+
+        // $user = auth('admins')->user();
+        // $success['token'] =  $user->createToken('authToken')->accessToken;
+
+        // $accessToken = auth()->user()->createToken('authToken')->accessToken;
+
+        // return response(['user' => $user, 'access_token' => $success]);
 
     }
 }
