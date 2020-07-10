@@ -37,6 +37,8 @@ Route::middleware('auth:customers')->group(function () {
         return "hola mundo";
     });
 
+    Route::post('/logout', 'Api\AuthController@logout');
+
     Route::get('/ceo/{id}', 'Api\CEOController@show');
     Route::get('/ceo', 'Api\CEOController@index');
     Route::post('/ceo', 'Api\CEOController@store');

@@ -7,6 +7,7 @@ use App\Admin;
 use App\Customer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -30,6 +31,15 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+
+        // if(auth('customers')->attempt(['email' => request('email'), 'password' => request('password')])){
+        //     $user = Auth::guard('customers')->user();
+        //     $success['token'] =  $user->createToken('authToken')->accessToken;
+        //     return response()->json(['success' => $success], $this->successStatus);
+        // }
+        // else{
+        //     return response()->json(['error'=>'Unauthorised'], 401);
+        // }
 
         $user = Customer::where("email", request('email'))->first();
         if(!isset($user)){
@@ -62,4 +72,25 @@ class AuthController extends Controller
         // return response(['user' => $user, 'access_token' => $success]);
 
     }
+
+    public function logout()
+    {
+        if (Auth::guard('customers')->user()) {
+            // $user = Auth::user()->token();
+            // $user->revoke();
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'Logout successfully'
+            // ]);
+
+            $user = Auth::guard('customers')->user();
+            return response()->json(['success' => $user]);
+        }else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to Logout'
+            ]);
+        }
+     }
 }
